@@ -1,0 +1,52 @@
+File Manifest for ICPSR 4291
+
+Wechsler, Henry. Harvard School of Public Health College Alcohol Study,
+2001. ICPSR04291-v2. Ann Arbor, MI: Inter-university Consortium for
+Political and Social Research [distributor], 2008-02-05.
+http://doi.org/10.3886/ICPSR04291.v2
+
+Details on the version history can be found below the file listings.
+
+
+Study-level Documentation
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    04291-descriptioncitation.pdf       -       -         -       2019-04-03  -
+
+    04291-related_literature.txt        -       -         -       daily       -
+
+    04291-manifest.txt                  -       -         -       daily       -
+
+
+DS0001 Harvard School of Public Health College Alcohol Study, 2001
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    04291-0001-Codebook.pdf             -       -         -       2008-02-05  aaaf112b8991bd6cf2c23ce6fbdd2738
+
+    04291-0001-Data.dta                 -       10,904    483     2008-02-05  d771e9c3fa0835139aa23043e4d89c37
+
+    04291-0001-Data.por                 -       10,904    483     2005-08-08  76765d900fbde35f56893493f1b727d0
+
+    04291-0001-Data.stc                 -       10,904    483     2005-08-08  131be059afe906d95cc9facef79d7512
+
+    04291-0001-Data.txt                 556     10,904    483     2005-08-08  2e0e3d98f85b8e197498214803210b0f
+
+    04291-0001-Record_layout.txt        -       -         -       2005-08-08  0bf05635f29db2a19866d8043b2a5bc1
+
+    04291-0001-Setup.dct                -       -         -       2008-02-05  3b7451a4cdda29000daa2c48a6f6fad1
+
+    04291-0001-Setup.do                 -       -         -       2008-02-05  639aabddb010e9307259d9a6eeeafa17
+
+    04291-0001-Setup.sas                -       -         -       2008-02-05  2c1152b8415ee69e4e3e651df9dccf7a
+
+    04291-0001-Setup.sps                -       -         -       2008-02-05  ae87933fc43c2c3b37653b651c137094
+
+
+Version History
+
+2008-02-05 ICPSR produced SPSS and Stata setups and a Stata version of the
+data which were added to the collection.

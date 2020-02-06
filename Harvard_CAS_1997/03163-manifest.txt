@@ -1,0 +1,62 @@
+File Manifest for ICPSR 3163
+
+Wechsler, Henry. Harvard School of Public Health College Alcohol Study,
+1997. ICPSR03163-v4. Ann Arbor, MI: Inter-university Consortium for
+Political and Social Research [distributor], 2020-01-30.
+http://doi.org/10.3886/ICPSR03163.v4
+
+Details on the version history can be found below the file listings.
+
+
+Study-level Documentation
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    03163-descriptioncitation.pdf       -       -         -       2020-01-30  -
+
+    03163-related_literature.txt        -       -         -       daily       -
+
+    03163-manifest.txt                  -       -         -       daily       -
+
+
+DS0001 Harvard School of Public Health College Alcohol Study, 1997
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    03163-0001-Codebook.pdf             -       -         -       2005-11-22  2f08a5d2614702d9297a65f118bfa764
+
+    03163-0001-Data.por                 -       14,428    430     2005-11-22  7b0b7ae5e2e58e1a7838ee7f7ca77b46
+
+    03163-0001-Data.stc                 -       14,428    430     2005-11-22  3a7c092ce15e0a497f67e7fb5e6dffd3
+
+    03163-0001-Data.txt                 516     14,428    430     2005-11-22  230b36c18a35926153549f65f76a84ee
+
+    03163-0001-Record_layout.txt        -       -         -       2005-11-22  c5b05b12fc1fedfd8d35afde71ad9e3a
+
+    03163-0001-Setup.sas                -       -         -       2005-11-22  5c1e42fcc0dc2996232e12a603e1c7dc
+
+
+Version History
+
+2020-01-30 Online variable search capabilities have been added for this
+study.  2005-11-22 The study has been updated with revised data supplied by
+the principal investigator to allow for comparable analyses with the
+HARVARD SCHOOL OF PUBLIC HEALTH COLLEGE ALCOHOL STUDY, 2001 (ICPSR 4291).
+This version of the data comprises the same 119 schools in the ICPSR 4291
+data. Six schools in the previous version were dropped, six schools not in
+the previous version were added, and six variables (SERIAL, COMMENTS,
+DATERECD, DATESCAN, FORMCODE, and ipeds) were added. ICPSR revised the
+documentation accordingly and added a SAS setup file to the collection. The
+SAS setup includes the PROC FORMAT statements from the previous version of
+the study.  2004-01-22 The principal investigator supplied a revised data
+file in which the number of colleges was increased from 116 to 119: 4
+schools in the first ICPSR version were dropped and 7 schools not in the
+first version were added. Some variables were removed, others were renamed,
+and new variables, including two weight variables, were added. Overall, the
+number of variables increased from 380 to 424 and the case count increased
+from 14,520 to 14,724. In addition, value 2 for variable F3 was recoded to
+0, and some values for variables STUDY_ID, ANYDRUG1 and ANYDRUG2 were
+revised. The documentation and other supporting files were updated
+accordingly.

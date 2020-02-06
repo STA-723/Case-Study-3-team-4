@@ -1,0 +1,60 @@
+File Manifest for ICPSR 6577
+
+Wechsler, Henry. Harvard School of Public Health College Alcohol Study,
+1993. ICPSR06577-v4. Ann Arbor, MI: Inter-university Consortium for
+Political and Social Research [distributor], 2020-01-30.
+http://doi.org/10.3886/ICPSR06577.v4
+
+Details on the version history can be found below the file listings.
+
+
+Study-level Documentation
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    06577-descriptioncitation.pdf       -       -         -       2020-01-30  -
+
+    06577-related_literature.txt        -       -         -       daily       -
+
+    06577-manifest.txt                  -       -         -       daily       -
+
+
+DS0001 Harvard School of Public Health College Alcohol Study, 1993
+
+    Filename                            Record  Record    Var.    Date        MD5
+                                        Length  Count     Count   Updated     Checksum
+
+    06577-0001-Codebook.pdf             -       -         -       2005-11-14  62738d159205ec654f4ef976f2d8c382
+
+    06577-0001-Data.por                 -       15,282    405     2005-11-14  fb49a39f3fc27ef4d97bed1f2ef59b58
+
+    06577-0001-Data.stc                 -       15,282    405     2005-11-14  afcfde6453b8312473ca7c18aa84739d
+
+    06577-0001-Data.txt                 459     15,282    405     2005-11-14  f1eb2024911a9adb281e857b6baa4032
+
+    06577-0001-Record_layout.txt        -       -         -       2005-11-14  dc7265caea0d9886f42943d795c88b6d
+
+    06577-0001-Setup.sas                -       -         -       2005-11-14  ef043f9cc56d91c0d754f48541d9a546
+
+
+Version History
+
+2020-01-30 Online variable search capabilities have been added for this
+study.  2005-11-14. The study has been updated with revised data supplied
+by the principal investigator to allow for comparable analyses with the
+Harvard School of Public Health College Alcohol Study, 2001 (ICPSR 4291).
+This version of the data comprises the same 119 schools in the ICPSR 4291
+data. Six schools in the previous version were dropped, six schools not in
+the previous version were added, and seven variables (MMDD, SERIAL,
+NEWC19_A, NEWC19_B, NEWC19_C, NEWC19_D, and WAVE) were added. In addition,
+ICPSR revised the documentation accordingly and added a SAS setup file to
+the collection. The SAS setup includes the PROC FORMAT statements from the
+previous version.  2003-12-02 The principal investigator supplied a revised
+data file in which the number of colleges was reduced from 140 to 119
+(2,189 cases were dropped). Some variables were removed, others were
+renamed, and new variables, including a weight variable, were added. In
+addition, ICPSR has identified 11 variables with one or more revised values
+(variables DRIVE, NUMPROB, PROBGULP, PROB5, PERSIST, NOBINGE, UPTAKE,
+GIVEUP, CONTBING, ANYDRUG1, and ANYDRUG2). The documentation and other
+supporting files were revised accordingly.
