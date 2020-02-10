@@ -25,7 +25,8 @@ Step 1 - import hte data
 ```{r}
 # Import all the four different data frames
 data1993 = read.table("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE, fill=FALSE, sep=NULL)
-data1993= read.fwf("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE ,widths=100)
+data1993= read.fwf("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE ,widths=c(3,5,1,0))
+diff = read.table("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Record-layout.txt",  header = FALSE, fill=FALSE, sep=NULL)
 ```
 
 
