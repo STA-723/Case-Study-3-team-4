@@ -1,0 +1,57 @@
+---
+title: "First_draft"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# R setup -graphical analysis.
+suppressMessages(library(tidyverse))
+suppressMessages(library(ggpubr))
+suppressMessages(library(truncnorm))
+suppressMessages(library(MASS))
+suppressMessages(library(mvtnorm))
+suppressMessages(library(coda))
+suppressMessages(library(mcsm))
+ggplot2::theme_set(ggplot2::theme_bw())
+```
+
+
+Step 1 - import hte data
+```{r}
+# Import all the four different data frames
+data1993 = read.table("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE, fill=FALSE, sep=NULL)
+data1993= read.fwf("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE ,widths=100)
+```
+
+
+```{r}
+v = data1993[,1]
+matrix(v, nrow = length(v), ncol = 405, byrow = TRUE)
+
+```
+```{r}
+library(readr)
+mystring = read_file("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt")
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
