@@ -27,12 +27,12 @@ datalabels01$width=(datalabels01$V3-datalabels01$V2)+1
 
 #Loading data (just one takes forever, apparently.  Consider making these into
 #files and commiting/pushing them.)
-data97=read.fwf("Harvard_CAS_1997/DS0001/03163-0001-Data.txt",widths=widths97,col.names=labels97)
-?write.csv
-write.csv(data97,file="Data/data97.csv")
 
 #I think it works!  At least for this one.
 data93=read.csv("Data/data93.csv")
+data97=read.csv("Data/data97.csv")
 data99=read.csv("Data/data99.csv")
 data01=read.csv("Data/data01.csv")
+
+
 
