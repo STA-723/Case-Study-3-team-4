@@ -17,37 +17,182 @@ suppressMessages(library(MASS))
 suppressMessages(library(mvtnorm))
 suppressMessages(library(coda))
 suppressMessages(library(mcsm))
+suppressMessages(library(corrplot))
+suppressMessages(library(survey))
+suppressMessages(library(weights))
+suppressMessages(library(mediation))
 ggplot2::theme_set(ggplot2::theme_bw())
 ```
 
 
-Step 1 - import hte data
+Step 1 - import the data
 ```{r}
 # Import all the four different data frames
-data1993 = read.table("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE, fill=FALSE, sep=NULL)
-data1993= read.fwf("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt",  header = FALSE ,widths=c(3,5,1,0))
-diff = read.table("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Record-layout.txt",  header = FALSE, fill=FALSE, sep=NULL)
+data99= read.csv("~/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/data99.csv", header=TRUE)
 ```
-
 
 ```{r}
-v = data1993[,1]
-matrix(v, nrow = length(v), ncol = 405, byrow = TRUE)
-
+# Compute the body mass index
+data99=data99 %>% 
+  # Compute the height in inches
+  mutate(height = G8FEET*12 + G8INCH) %>% 
+  # Compute the body mass index
+  mutate(BMI = 703 * G7/height^2) %>% 
+  # Introduce the different levels for body mass indexes
+  mutate(BMI_level = case_when(BMI < 16 ~ "severely underweight",
+                               BMI >= 16 & BMI < 18.5 ~ "underweight",
+                               BMI >= 18.5 & BMI < 25 ~ "normal",
+                               BMI >= 25 & BMI < 30 ~ "overweight",
+                               BMI >= 30 ~ "obese"))
 ```
+Look at the relationship between BMI category and self reported drinking habits
 ```{r}
-library(readr)
-mystring = read_file("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Harvard_CAS_1993/DS0001/06577-0001-Data.txt")
-
+ggplot(data99)+
+  geom_point(aes(x=BMI, y=VOL30))
+```
+Correlation plots between drug usage
+```{r}
+# Correlation plot of drugs in the last year
+cols = data99 %>%
+  dplyr::select(YEARE1A:YEARE1P)
+colnames(cols) = c("marijuana", "crack", "cocaine", "barbiturates",
+                   "amphetamines", "tranquilizers", "heroin", "other opiates", "LSD",
+                   "PCP", "ecstasy", "steroids", "chewing tobacco", "cigarettes",
+                   "cigars", "pipe tobacco")
+corr = cor(cols, use = "pairwise.complete.obs")
+corrplot(corr, type="full")
 ```
 
+```{r}
+# Correlation plot of drugs in the last 30 days
+cols_months = data99 %>%
+  dplyr::select(A11, DAYE1A:DAYE1P)
+colnames(cols_months) = c("greek member","marijuana", "crack", "cocaine", "barbiturates",
+                   "amphetamines", "tranquilizers", "heroin", "other opiates", "LSD",
+                   "PCP", "ecstasy", "steroids", "chewing tobacco", "cigarettes",
+                   "cigars", "pipe tobacco")
+corr_months = cor(cols_months, use = "pairwise.complete.obs")
+corrplot(corr_months, type="full")
+```
+Recompute the correlation plots accounting for sampling weights
+```{r}
+# Correlation plot of drugs in the last year
+cols = data99 %>%
+  dplyr::select(G10, YEARE1A:YEARE1P)
+colnames(cols) = c("high school", "marijuana", "crack", "cocaine", "barbiturates",
+                   "amphetamines", "tranquilizers", "heroin", "other opiates", "LSD",
+                   "PCP", "ecstasy", "steroids", "chewing tobacco", "cigarettes",
+                   "cigars", "pipe tobacco")
+corr = weights::wtd.cors(cols,weight = data99$WEIGHT99)
+corrplot(corr, type="full")
+```
 
+Current alcohol use and greek life
+```{r}
+cor(data99$A11, data99$C6, use = "complete")
+table(data99$C6,data99$A11)
+```
 
+Try a small survey analysis
+```{r}
+survey::svyplot()
+```
 
+```{r}
+table(data99$C6,data99$A11)
+```
 
+## Subset the variables and aggregating them
+```{r}
+# Select the following variables
+subset99 = data99 %>%
+  dplyr::select(
+    ################ General features
+    A1, # Age
+    A2, # Gender
+    A3, # Year in school - 1 = Freshman, 2= Sophmore, 3 = Junior, 4 = Senior, 5= 5th year, 6= Grad
+    A11, # Greek member
+    A10A, # live alone
+    A10B, # roommate
+    A10C, # live with spouse
+    A10D, # live with parents
+    
+    ################ Alchool related variables
+    C1, # Binge 5 drinks in last two weeks
+    C2, # Binge 4 drinks in last two weeks
+    C6, # Current alcohol use
+    C8, # When last drink - need to recode it
+    C9, # Alchool in last 30 days
+    C10, # 30 days, how many drinks usually
+    C11, # 30 days, how many times drunk
+    C17A:C17L, # drinking prob: hangover - to - drinking prob: overdose - need to aggregate them 
+    
+    ################ Related Drug variables
+    E17, #Attended AA meetings
+    E1A:E1K, #Variables of interests - heavy drugs
+    
+    ################ Education related variables
+    F1, # Education satisfaction
+    F2, # Number of close friends
+    F4, # GPA
+    
+    ################ Background variables
+    G1, # Current marital status
+    G2, # Spanish/Hispanic
+    G4, # Religion raised
+    G10:G12, # Alchol in high school
+    G15:G17, # Family and alchool
+    G18, # father schooling
+    G19, # mother schooling
+    G3A:G3E, # etnicity
+    
+    ################ Created variables
+    DAYE1A:DAYE1K  ,
+    
+    # Weighs
+    WEIGHT99
+  )
+```
 
+Try to run a very simple model to see the output
+```{r}
+# Model 1 - regression of college drinking on high school drinking 
+# Alchol score in college
+subset99$C2 = subset99$C2 -1
+subset99$C2[is.na(subset99$C2)]=0
+subset99$C1 = subset99$C2 -1
+subset99$C1[is.na(subset99$C1)]=0
+subset99$score_alchol_college = subset99$C1 + subset99$C2
+# Alchol score in high school
+subset99$G10 = subset99$G10 - 1
+subset99$G10[is.na(subset99$G10)]=0
+subset99$G11[is.na(subset99$G11)]=0
+subset99$G12 = subset99$G12 - 1
+subset99$G12[is.na(subset99$G12)]=0
+subset99$score_alchol_highshool = subset99$G10  + subset99$G11 + subset99$G12
+model_alch = lm(score_alchol_college ~ score_alchol_highshool + A11, data=subset99, weights = WEIGHT99)
+# Model 2 - (probit) regression of heavy drugs on college drinking
+# Ever used any type of bad drug
+subset99$drugs =0
+colsdrug = c("E1A", "E1B", "E1C", "E1D", "E1E", "E1F","E1G","E1H","E1I", "E1J", "E1K")
+subset99 = subset99 %>%
+  mutate_at(vars(E1A, E1B, E1C, E1D, E1E, E1F,E1G,E1H,E1I, E1J, E1K), function(x){x-1}) %>%
+  mutate(D_sum = rowMeans(.[,c(29:39)]),
+         Drug_Use = if_else(D_sum > 0, 1, 0))
+subset99$Drug_Use = as.integer(subset99$Drug_Use)
+model_drug = glm(Drug_Use ~  score_alchol_college +score_alchol_highshool + A11,data=subset99, family=binomial("logit"), weights =  WEIGHT99, na.action = "na.exclude")
+# Put it all together
+med.out  =  mediate(model_alch, model_drug, treat ="score_alchol_highshool", mediator =  "score_alchol_college", robustSE = TRUE, sims = 100)
+```
 
-
+```{r}
+# Subset the data with known values
+subset99$Drug_Use[is.na(subset99$Drug_Use)]=0
+model_alch = lm(score_alchol_college ~ score_alchol_highshool + A11, data=subset99, weights = WEIGHT99)
+model_drug = glm(Drug_Use ~  score_alchol_college +score_alchol_highshool + A11,data=subset99, family=binomial("logit"), weights =  WEIGHT99)
+med.out  =  mediate(model_alch, model_drug, treat ="score_alchol_highshool", mediator =  "score_alchol_college", robustSE = TRUE, sims = 100)
+summary(med.out)
+```
 
 
 
