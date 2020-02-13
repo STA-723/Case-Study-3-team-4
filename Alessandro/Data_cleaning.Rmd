@@ -118,7 +118,7 @@ subset97 = data97 %>%
 
     ################ Background variables
     Marital_status = G1, # Current marital status
-    Spanish = G2, 
+    Spanish = HISPANIC, 
     G3, # etnicity - need to fix it
     religion = G4, # Religion raised
     "HS_times_drank" = G9,
@@ -283,7 +283,7 @@ colnames(subset93)[colnames(subset93) %in% c("G11", "G12","G13")] = fam_alchool
 colnames(subset99)[colnames(subset99) %in% c("G15","G16","G17")] =fam_alchool
 
 race = c("white", "black", "asian", "native_american", "other")
-colnames(subset99)[colnames(subset99) %in% c("G3A", "G3B", "G3C", "G3D", "G3E")] =race
+colnames(subset99)[colnames(subset99) %in% c("G3A", "G3B", "G3C", "G3D", "G3E")] = race
 subset93$white = (subset93$G3==1)*1
 subset93$black = (subset93$G3==2)*1
 subset93$asian = (subset93$G3==3)*1
@@ -309,6 +309,63 @@ subset97 = subset97[, colnames(subset97)%in% common_cols]
 subset99 = subset99[, colnames(subset99)%in% common_cols]
 
 df = rbind(subset93[,sort(names(subset93))],  subset99[,sort(names(subset99))], subset97[,sort(names(subset97))])
+
+# Do some fixtures
+#df$Spanish[df$year==1999] = df$Spanish[df$year==1999] + 1
+df$gender[df$year==1999] = df$gender[df$year==1999] + 1
+df$`30_days_alchol`[df$year==1993 & is.na(df$`30_days_alchol`)] = 0
+df$`30_days_alchol`[df$year==1993] = df$`30_days_alchol`[df$year==1993]  + 1
+df$`30_days_alchol`[df$`30_days_alchol`==1] = NA
+df$`30_days_alchol` = df$`30_days_alchol`-1
+
+df$`30_days_drink_usually`[df$year==1993 & is.na(df$`30_days_drink_usually`)] = 0
+df$`30_days_drink_usually`[df$year==1993] = df$`30_days_drink_usually`[df$year==1993]  + 1
+df$`30_days_drink_usually`[df$`30_days_drink_usually`==1] = NA
+df$`30_days_drink_usually` = df$`30_days_drink_usually`-1
+df$`30_days_drink_usually`[df$`30_days_drink_usually`==-1] = NA
+
+df$age[df$age==26] = 25
+
+df$AA_meeting[df$year==1997 & df$AA_meeting==2] =  0
+df$AA_meeting[df$year==1993 & df$AA_meeting==2] =  1
+df$AA_meeting[df$year==1993 & df$AA_meeting==3] =  1
+
+df$AA_meeting[df$year==1993 & df$AA_meeting==3] =  1
+df$white[is.na(df$white) & df$year ==1999] = 0 
+df$black[is.na(df$black) & df$year ==1999] = 0 
+df$native_american[is.na(df$native_american) & df$year ==1999] = 0 
+df$asian[is.na(df$asian) & df$year ==1999] = 0 
+df$other[is.na(df$other) & df$year ==1999] = 0 
+
+df$Spanish[df$Spanish == 2 ] = 0
+
+df$DP_argue_friends[df$DP_argue_friends > 3] = 3
+df$DP_behind_schoolwork[df$DP_behind_schoolwork > 3] = 3
+df$DP_damage_property[df$DP_damage_property > 3] = 3
+df$DP_forget_where[df$DP_forget_where > 3] = 3
+df$DP_hangover[df$DP_hangover > 3] = 3
+df$DP_hurt[df$DP_hurt > 3] = 3
+df$DP_later_regret[df$DP_later_regret > 3] = 3
+df$DP_missed_class[df$DP_missed_class > 3] = 3
+df$DP_overdose[df$DP_overdose > 3] = 3
+df$DP_trouble_police[df$DP_trouble_police > 3] = 3
+df$DP_unpl_sex[df$DP_unpl_sex > 3] = 3
+df$DP_unprot_sex[df$DP_unprot_sex > 3] = 3
+
+df$greek_member[df$greek_member==2] = 0
+
+df$mother_schooling[df$mother_schooling!=4 & df$year!=1997]=0 
+df$mother_schooling[df$mother_schooling==4]=1
+
+df$father_schooling[df$father_schooling!=4 & df$year!=1997]=0 
+df$father_schooling[df$father_schooling==4]=1
+
+df$live_spouse[is.na(df$live_spouse)] = 0
+df$live_alone[is.na(df$live_alone)] = 0
+df$live_parents[is.na(df$live_parents)] = 0
+df$live_roommate[is.na(df$live_roommate)] = 0
+
+df$N_close_friends[df$year!=1993]= df$N_close_friends[df$year!=1993] +1
 write.csv(df, "~/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/data_93_97_99.csv")
 ```
 
