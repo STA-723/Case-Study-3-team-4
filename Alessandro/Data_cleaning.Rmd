@@ -366,16 +366,10 @@ df$live_parents[is.na(df$live_parents)] = 0
 df$live_roommate[is.na(df$live_roommate)] = 0
 
 df$N_close_friends[df$year!=1993]= df$N_close_friends[df$year!=1993] +1
+
+df$year_in_school[df$year_in_school==6]=5 
 write.csv(df, "~/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/data_93_97_99.csv")
 ```
-
-
-
-
-
-
-
-
 
 
 
