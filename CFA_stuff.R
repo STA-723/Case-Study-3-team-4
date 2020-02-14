@@ -28,8 +28,6 @@ predicts <- lavPredict(fit)
 # Measures
 fitmeasures(fit)
 
-
-
 df %>% ggplot(aes(x=HS_drinks_5.,fill=as.factor(D))) + geom_bar() + facet_wrap(~year)
 df %>% ggplot(aes(x=HS_times_drank,fill=as.factor(D))) + geom_bar() + facet_wrap(~year)
 df %>% ggplot(aes(x=HS_n_drinks,fill=as.factor(D))) + geom_bar() + facet_wrap(~year)

@@ -1,0 +1,109 @@
+---
+title: "Mediation_model"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(ggpubr))
+suppressMessages(library(truncnorm))
+suppressMessages(library(MASS))
+suppressMessages(library(mvtnorm))
+suppressMessages(library(coda))
+suppressMessages(library(mcsm))
+suppressMessages(library(corrplot))
+suppressMessages(library(survey))
+suppressMessages(library(weights))
+suppressMessages(library(mediation))
+library(gtools)
+ggplot2::theme_set(ggplot2::theme_bw())
+```
+
+# Import the data
+```{r}
+# Import the data
+data_dir = "/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/"
+df =  read_csv(paste(data_dir, "data_93_97_99.csv", sep = ""))[,-1]
+```
+
+# Joe's code
+```{r}
+# Function to convert Drug_ecstasy into 1's
+f <- function(x) {ifelse(x == 0,1,x)}
+# Response variable
+D <- df %>% dplyr::mutate_at(vars("Drug_ecstasy"),f) %>% dplyr::select(-Drug_marijuana) %>%
+  dplyr::select(starts_with("Drug_")) %>% mutate_at(vars(starts_with("Drug_")), function(x){x-1}) %>% mutate(sumVar = rowSums(dplyr::select(., contains("Drug_")))) %>%
+  mutate(D = ifelse(sumVar > 0,1,0)) %>% dplyr::select(D)
+
+# Add response variable and drop Drug variables
+df = bind_cols(df,D) %>% dplyr::select(-starts_with("Drug_"))
+  
+# We notice a contraddiciton in the data. The ones that answered queation when did you had 
+# last drink and were at level 5 and 4, later declared that they did not drink. This is a measure for
+# seriousness in the survey completion, so we drop them.
+df = df[-which(df$`30_days_alchol`==1 & df$`30_days_drink_usually`==1),]
+df[is.na(df$`30_days_alchol`),]$`30_days_alchol` = 1
+df[is.na(df$`30_days_drink_usually`),]$`30_days_drink_usually` = 1
+df[is.na(df$`30_days_drunk`),]$`30_days_drunk` = 1
+
+# Recode the variables in DP. If they are NA, then code it as 0. If never had a problem, as 1,
+# else as 2.
+switch_dp <- function(variable) {
+  ifelse(is.na(variable),1,ifelse(variable == 3,2,variable))
+}
+df = df %>% mutate_at(vars(starts_with("DP_")),switch_dp)
+
+# Get rid of the missing datas in the variables
+function_all_na <- function(tibble) {
+  which(rowSums(is.na(tibble)) != ncol(tibble))
+}
+indicies_to_remove <- df %>% dplyr::select(black,white,asian,other,native_american,Spanish) %>% function_all_na
+df <- df[indicies_to_remove,]
+
+switch_race <- function(variable) {
+  ifelse(is.na(variable),0,variable)
+}
+
+df <- df %>% mutate_at(vars(black,Spanish,white,native_american,asian,other), switch_race)
+# keep the complete cases
+df = df[complete.cases(df), ]
+write.csv(df, "final_data.csv")
+df$HS_drinks_5 = df$`HS_drinks_5+` 
+############################################################### High school latent factors
+M_highschool = ' HS_Drinking  =~ HS_drinks_5 + HS_n_drinks + HS_times_drank
+      Parents_Drinkinf  =~ AlchUse_father + AlchUse_mother + AlchUse_famfeel'
+
+# This is how you fit CFA model
+fit_highschool = cfa(M_highschool, data=df,ordered = c("HS_drinks_5","HS_n_drinks","HS_times_drank","AlchUse_father","AlchUse_mother","AlchUse_famfeel"))
+
+# Predictions
+eta_highschool = lavPredict(fit_highschool) 
+############################################################### College drinking factors
+# Drinking problem latent variables
+M_DP <- 'DP =~ DP_argue_friends + DP_behind_schoolwork + DP_damage_property + DP_forget_where + DP_hangover +
+       DP_hurt + DP_later_regret + DP_missed_class + DP_overdose + DP_trouble_police + DP_unpl_sex '
+fit_DP = cfa(M_DP, data=df)
+eta_DP = lavPredict(fit_DP) 
+
+# College drinking latent variables
+
+M_College <- 'College_drinking =~ 30_days_alchol + 30_days_drink_usually + 30_days_drunk + '
+fit_DP = cfa(M_DP, data=df)
+eta_DP = lavPredict(fit_DP) 
+# Measures
+
+df %>% ggplot(aes(x=HS_drinks_5.,fill=as.factor(D))) + geom_bar() + facet_wrap(~year)
+df %>% ggplot(aes(x=HS_times_drank,fill=as.factor(D))) + geom_bar() + facet_wrap(~year)
+df %>% ggplot(aes(x=HS_n_drinks,fill=as.factor(D))) + geom_bar() + facet_wrap(~year)
+
+
+```
+
+
+
+
+
+
+
+
