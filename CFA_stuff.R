@@ -55,7 +55,6 @@ model.mediator <- stan_glm()
   
 
 df <- read.csv("/Users/josephmathews/Desktop/Case Studies/CaseStudy3/Case-Study-3-team-422/Data/final_data.csv")
-
 f1 <- function(var) {
   ifelse((var == 3  | var == 5 | var == 6 | var == 7),1,0)
 }
@@ -90,16 +89,18 @@ df <- df %>% mutate_at(vars(X30_days_alchol,X30_days_drink_usually,X30_days_drun
                             HS_drinks_5.,HS_n_drinks,HS_times_drank),as.ordered)
 df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,father_schooling,
                             gender,greek_member,starts_with("live_"),Marital_status,mother_schooling,
-                            native_american,other,religion,Spanish,white,year,year_in_school,D),as.factor)
+                            native_american,other,religion,Spanish,white,year,year_in_school),as.factor)
 
-X <- df %>% select(-c("HS_drinks_5","last_drink",starts_with("DAYE1"),"D","survey_weight")) %>% as.matrix()
+X <- df %>% select(-c("HS_drinks_5","last_drink",starts_with("DAYE1"),"D","survey_weight")) 
 y <- df %>% select("D") %>% as.matrix() %>% .[,1]
+
+y <- ifelse(y == 0, -1,1) 
 da <- list("X"=X,"y"=y)
 groups <- c(1,1,1,2,3,4,5,5,5,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,
             9,10,11,12,13,14,15,16,17,17,17,17,18,10,19,6,6,20,6,6,21,
             22)
-
-model_lasso <- gglasso(x=da$X,y=da$y,group=groups,loss="ls")
+library(gglasso)
+model_lasso <- gglasso(x=da$X,y=da$y,group=groups,loss="logit")
 
 
 
