@@ -196,6 +196,66 @@ subset99 = data99 %>%
   mutate(year = 1999)
 ```
 
+# 2001
+```{r}
+# Import the data
+data01 =  read_csv(paste(data_dir, "data01.csv", sep = ""))[,-1]
+subset01 = data01 %>%
+  dplyr::select(
+    ################ General features
+    age = A1, # Age
+    gender= A2, # Gender
+    year_in_school = A3, # Year in school - 1 = Freshman, 2= Sophmore, 3 = Junior, 4 = Senior, 5= 5th year, 6= Grad
+    live_alone = A7A,
+    live_roommate = A7B,
+    live_spouse = A7C,
+    live_parents = A7D,
+    greek_member = A5, # Greek member
+    ################ Alchool related variables
+    "binge_5+" = C1, # Binge 5 drinks in last two weeks
+    "binge_4+" = C2, # Binge 4 drinks in last two weeks
+    last_drink = C10, # When last drink - need to recode it
+    C17A:C17L, # Drinking problems
+    alchol_use = C7, # Current alcohol use
+    "30_days_drunk" = C13,
+    "30_days_drink_usually" = C12,
+    "30_days_alchol" = C11,
+    ################ Related Drug variables
+    AA_meeting = E24, #Attended AA meetings
+    E1A:E1M, #Variables of interests - heavy drugs
+    
+    
+    ################ Education related variables
+    Educ_satisfaction = F1, # Education satisfaction ????
+    N_close_friends = F3, # Number of close friends
+    GPA = F5, # GPA
+    
+    ################ Background variables
+    Marital_status = G1, # Current marital status
+    Spanish = G2, 
+    G3A:G3E, # etnicity - need to fix it
+    religion = G4, # Religion raised
+    "HS_times_drank" = G9,
+    "HS_n_drinks" = G10,
+    "HS_drinks_5+" = G11,
+    "AlchUse_father" = G14,
+    "AlchUse_mother" = G15,
+    "AlchUse_famfeel" = G16,
+    "father_schooling" = G17,
+    "mother_schooling" = G18,
+    
+    
+    ################ Created variables
+    DAYE1A:DAYE1L, 
+    
+    # Weights
+    survey_weight = STWGT_01
+  ) %>%
+  mutate(year = 2001, E1L = E1L + E1M, E1F = E1F + E1G) %>%
+  dplyr::select(-E1M, -E1G)
+
+```
+
 Start merging the first two datasets.
 ```{r}
 # Merge general features
@@ -236,6 +296,7 @@ drinkprobs= c("DP_hangover", "DP_missed_class", "DP_behind_schoolwork",
 colnames(subset93)[startsWith(colnames(subset93),"C17_") ] = drinkprobs
 colnames(subset97)[startsWith(colnames(subset97),"C16_") ] = drinkprobs
 colnames(subset99)[startsWith(colnames(subset99),"C17")] = drinkprobs
+colnames(subset01)[startsWith(colnames(subset01),"C17")] = drinkprobs
 
 ################ Related Drug variables
 colnames(subset99)[colnames(subset99) == "E17"] = "AA_meeting"
@@ -243,6 +304,7 @@ colnames(subset93)[colnames(subset93) == "E12A"] = "AA_meeting"
 drugs = c("Drug_marijuana", "Drug_crack", "Drug_cocaine", "Drug_barbiturates",
           "Drug_amphetamines", "Drug_tranquilizers", "Drug_heroin", 
           "Drug_other_opiates", "Drug_LSD","Drug_PCP", "Drug_ecstasy")
+colnames(subset01)[startsWith(colnames(subset01),"E1")] = drugs
 colnames(subset99)[startsWith(colnames(subset99),"E1")] = drugs
 colnames(subset97)[startsWith(colnames(subset97),"E1_")] = drugs
 colnames(subset93)[startsWith(colnames(subset93),"E1_")] = drugs[-11]
@@ -284,6 +346,7 @@ colnames(subset99)[colnames(subset99) %in% c("G15","G16","G17")] =fam_alchool
 
 race = c("white", "black", "asian", "native_american", "other")
 colnames(subset99)[colnames(subset99) %in% c("G3A", "G3B", "G3C", "G3D", "G3E")] = race
+colnames(subset01)[colnames(subset01) %in% c("G3A", "G3B", "G3C", "G3D", "G3E")] = race
 subset93$white = (subset93$G3==1)*1
 subset93$black = (subset93$G3==2)*1
 subset93$asian = (subset93$G3==3)*1
@@ -303,16 +366,21 @@ colnames(subset93)[colnames(subset93) == "STWGT_93"] = "survey_weight"
 colnames(subset99)[colnames(subset99) == "STWGT_99"] = "survey_weight"
 
 # Merge the datasets, keep only the same columns
-common_cols = Reduce(intersect, list(colnames(subset93),colnames(subset97), colnames(subset99)))
+common_cols = Reduce(intersect, list(colnames(subset93),colnames(subset97), colnames(subset99),colnames(subset01)))
 subset93 = subset93[, colnames(subset93)%in% common_cols]
 subset97 = subset97[, colnames(subset97)%in% common_cols]
 subset99 = subset99[, colnames(subset99)%in% common_cols]
+subset01 = subset01[, colnames(subset01)%in% common_cols]
 
-df = rbind(subset93[,sort(names(subset93))],  subset99[,sort(names(subset99))], subset97[,sort(names(subset97))])
+df = rbind(subset93[,sort(names(subset93))], 
+           subset99[,sort(names(subset99))], 
+           subset97[,sort(names(subset97))], 
+           subset01[,sort(names(subset01))])
 
 # Do some fixtures
 #df$Spanish[df$year==1999] = df$Spanish[df$year==1999] + 1
 df$gender[df$year==1999] = df$gender[df$year==1999] + 1
+df$gender[df$year==2001] = df$gender[df$year==2001] + 1
 df$`30_days_alchol`[df$year==1993 & is.na(df$`30_days_alchol`)] = 0
 df$`30_days_alchol`[df$year==1993] = df$`30_days_alchol`[df$year==1993]  + 1
 df$`30_days_alchol`[df$`30_days_alchol`==1] = NA
@@ -337,6 +405,11 @@ df$native_american[is.na(df$native_american) & df$year ==1999] = 0
 df$asian[is.na(df$asian) & df$year ==1999] = 0 
 df$other[is.na(df$other) & df$year ==1999] = 0 
 
+df$white[is.na(df$white) & df$year ==2001] = 0 
+df$black[is.na(df$black) & df$year ==2001] = 0 
+df$native_american[is.na(df$native_american) & df$year ==2001] = 0 
+df$asian[is.na(df$asian) & df$year ==2001] = 0 
+df$other[is.na(df$other) & df$year ==2001] = 0 
 df$Spanish[df$Spanish == 2 ] = 0
 
 df$DP_argue_friends[df$DP_argue_friends > 3] = 3
@@ -368,7 +441,7 @@ df$live_roommate[is.na(df$live_roommate)] = 0
 df$N_close_friends[df$year!=1993]= df$N_close_friends[df$year!=1993] +1
 
 df$year_in_school[df$year_in_school==6]=5 
-write.csv(df, "~/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/data_93_97_99.csv")
+write.csv(df, "~/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/data_93_97_99_01.csv")
 ```
 
 

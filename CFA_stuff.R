@@ -100,7 +100,7 @@ groups <- c(1,1,1,2,3,4,5,5,5,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,
             9,10,11,12,13,14,15,16,17,17,17,17,18,10,19,6,6,20,6,6,21,
             22)
 library(gglasso)
-model_lasso <- gglasso(x=da$X,y=da$y,group=groups,loss="logit")
+model_lasso <- gglasso(x=da$X,y=da$y,group=groups,nlambda = 1,lambda=.25, eps = 1e-6,loss="logit")
 
 
 

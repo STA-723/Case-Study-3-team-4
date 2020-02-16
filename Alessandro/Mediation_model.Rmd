@@ -24,7 +24,7 @@ ggplot2::theme_set(ggplot2::theme_bw())
 ```{r}
 # Import the data
 data_dir = "/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/"
-df =  read_csv(paste(data_dir, "data_93_97_99.csv", sep = ""))[,-1]
+df =  read_csv(paste(data_dir, "data_93_97_99_01.csv", sep = ""))[,-1]
 ```
 
 # Joe's code
@@ -132,10 +132,10 @@ df <- df %>% mutate_at(vars(AlchUse_father,AlchUse_mother, alchol_use),f1)
 
 
 df <- df %>% mutate_at(vars(X30_days_alchol,X30_days_drink_usually,X30_days_drunk,AlchUse_famfeel,
-                            "binge_4.","binge_5.",starts_with("DP"),Educ_satisfaction,
+                            "binge_4.","binge_5.",Educ_satisfaction,
                             HS_drinks_5.,HS_n_drinks,HS_times_drank),as.ordered)
 df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,father_schooling,
-                            gender,greek_member,starts_with("live_"),Marital_status,mother_schooling,
+                            gender,greek_member,starts_with("live_"),starts_with("DP"),Marital_status,mother_schooling,
                        native_american,other,religion,Spanish,white,year,year_in_school,alchol_use),as.factor) %>%
   rename(other_race = other ,age_individ= age)
 
@@ -163,8 +163,11 @@ for(n in 1:length(varnames)){
 }
 
 library(gglasso)
+sampled_rows = sample(c(1:nrow(M)),8000)
+da <- list("X"=M[sampled_rows,],"y"=y[sampled_rows])
+model_lasso <- cv.gglasso(x=da$X,y=da$y,group=groups_contrast,loss="logit")
 da <- list("X"=M,"y"=y)
-model_lasso <- gglasso(x=da$X,y=da$y,group=groups_contrast,loss="logit")
+model_lasso_simple <- gglasso(x=da$X,y=da$y,group=groups_contrast,lambda=model_lasso$lambda.min,loss="logit")
 ```
 
 
