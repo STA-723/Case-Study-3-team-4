@@ -91,7 +91,7 @@ df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,fathe
                             gender,greek_member,starts_with("live_"),Marital_status,mother_schooling,
                             native_american,other,religion,Spanish,white,year,year_in_school),as.factor)
 
-X <- df %>% select(-c("HS_drinks_5","last_drink",starts_with("DAYE1"),"D","survey_weight")) %>% as.matrix()
+X <- df %>% select(-c("HS_drinks_5","last_drink",starts_with("DAYE1"),"D","survey_weight")) 
 y <- df %>% select("D") %>% as.matrix() %>% .[,1]
 
 y <- ifelse(y == 0, -1,1) 
@@ -101,6 +101,38 @@ groups <- c(1,1,1,2,3,4,5,5,5,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,
             22)
 library(gglasso)
 model_lasso <- gglasso(x=da$X,y=da$y,group=groups,loss="logit")
+
+
+
+
+
+library(tidyverse)
+df %>% rename(other = other_race)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
