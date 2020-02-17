@@ -139,7 +139,7 @@ df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,fathe
                        native_american,other,religion,Spanish,white,year,year_in_school,alchol_use),as.factor) %>%
   rename(other_race = other ,age_individ= age)
 
-X <- df %>% dplyr::select(-c("HS_drinks_5","last_drink",starts_with("DAYE1"),"D","survey_weight")) 
+X <- df %>% dplyr::select(-c("last_drink",starts_with("DAYE1"),"D","survey_weight")) 
 
 # Create y and recode it
 y <- df %>% dplyr::select("D")# %>% as.matrix() %>% .[,1]
@@ -163,11 +163,11 @@ for(n in 1:length(varnames)){
 }
 
 library(gglasso)
-sampled_rows = sample(c(1:nrow(M)),8000)
-da <- list("X"=M[sampled_rows,],"y"=y[sampled_rows])
-model_lasso <- cv.gglasso(x=da$X,y=da$y,group=groups_contrast,loss="logit")
+#sampled_rows = sample(c(1:nrow(M)),8000)
+#da <- list("X"=M[sampled_rows,],"y"=y[sampled_rows])
 da <- list("X"=M,"y"=y)
-model_lasso_simple <- gglasso(x=da$X,y=da$y,group=groups_contrast,lambda=model_lasso$lambda.min,loss="logit")
+model_lasso <- cv.gglasso(x=da$X,y=da$y,group=groups_contrast,loss="logit")
+model_lasso_simple <- gglasso(x=da$X,y=da$y,group=groups_contrast,loss="logit")
 ```
 
 
