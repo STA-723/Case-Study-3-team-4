@@ -1,0 +1,146 @@
+---
+title: "Final_models"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE)
+suppressMessages(library(tidyverse))
+suppressMessages(library(ggpubr))
+suppressMessages(library(truncnorm))
+suppressMessages(library(MASS))
+suppressMessages(library(mvtnorm))
+suppressMessages(library(coda))
+suppressMessages(library(mcsm))
+suppressMessages(library(corrplot))
+suppressMessages(library(survey))
+suppressMessages(library(weights))
+suppressMessages(library(mediation))
+library(gtools)
+ggplot2::theme_set(ggplot2::theme_bw())
+```
+
+
+# Import the data
+```{r}
+df <- read.csv("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/final_data.csv")
+ggplot2::theme_set(ggplot2::theme_bw())
+df <- df %>% dplyr::select(-survey_weight)
+
+df <- df %>% mutate_at(vars(X30_days_alchol,X30_days_drink_usually,X30_days_drunk,AlchUse_famfeel,
+                            "binge_4.","binge_5.",Educ_satisfaction,
+                            HS_drinks_5.,HS_n_drinks,HS_times_drank),as.ordered)
+df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,father_schooling,
+                            gender,greek_member,starts_with("live_"),
+                            Marital_status,mother_schooling,
+                            native_american,
+                            other,religion,Spanish,white,
+                            year,year_in_school,alchol_use,starts_with("DP")),as.factor) 
+
+model <- glm(D ~. , data=df)  # Run a GLM model 
+```
+
+# 1 - run the lasso variable selection
+We start by runnning a simple lasso regression via glmnet package.
+```{r}
+library(glmnet)
+f1 <- function(var) {
+  ifelse((var == 3  | var == 5 | var == 6 | var == 7),1,0)
+}
+df <- df %>% mutate_at(vars(AlchUse_father,AlchUse_mother, alchol_use),f1)
+X <- df %>% dplyr::select(-c("last_drink",starts_with("DAYE1"),"D","survey_weight", "X")) 
+# Create y and recode it
+y <- df %>% dplyr::select("D")# %>% as.matrix() %>% .[,1]
+# Model matrix
+M = model.matrix(D~., data=cbind(X,y))[,-1]
+#da <- list("X"=X,"y"=y)
+
+model_lasso = glmnet(as.matrix(M), as.matrix(y), family = "binomial", weights = c(df$survey_weight))
+plot(model_lasso)
+model_lasso_cv =cv.glmnet(as.matrix(M), as.matrix(y), family = "binomial", type.measure = "class", weights = c(df$survey_weight))
+plot(model_lasso_cv)
+coef(model_lasso_cv, s = "lambda.1se")
+```
+
+# 2 - run the group lasso variable selection
+```{r}
+# Build the group lasso 
+library(grplasso)
+groups <- c(1,1,1,2,3,4,5,5,5,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,
+            9,10,11,12,13,14,15,16,17,17,17,17,18,10,19,6,6,20,6,6,21,
+            22)
+columns_contrast =colnames(M)
+varnames = colnames(X)
+groups_contrast = rep(0, ncol(M))
+for(n in 1:length(varnames)){
+  for(m in 1:length(columns_contrast)){
+    if(grepl(varnames[n], columns_contrast[m], fixed=TRUE)){
+      #print(paste(varnames[n], columns_contrast[m], sep = " - "))
+      groups_contrast[m] = groups[n]
+    }
+  }
+}
+
+model_glasso = grplasso(as.matrix(cbind(rep(1, nrow(M)),M)),
+                        as.matrix(y),index=c(NA,groups_contrast),
+                        lambda = model_lasso_cv$lambda, model = LogReg())
+plot(model_glasso)
+y <- ifelse(y == 0, -1,1) 
+da <- list("X"=as.matrix(M),"y"=as.matrix(y))
+model_lasso_simple <- gglasso(x=da$X,y=da$y,
+                              group=groups_contrast,
+                              loss="logit", lambda = model_lasso_cv$lambda.min)
+```
+
+```{r}
+sampled_rows = sample(c(1:nrow(M)), size = 100)
+da_red <- list("X"=as.matrix(M[sampled_rows,]),"y"=as.matrix(y[sampled_rows,]))
+model_lasso_simple_red <- gglasso(x=da$X,y=da$y,
+                              group=groups_contrast,
+                              loss="logit", lambda = model_lasso_cv$lambda.1se)
+```
+
+
+# 3 - Build the standard GLM model with the selected variables
+```{r}
+# Extract the selected variables
+selected = names(coef(model_lasso_simple_red)[coef(model_lasso_simple_red)>0,])
+cols = NULL
+for(s in selected){
+  for(var in colnames(X)){
+    if(grepl(var, s, fixed=TRUE)){
+      cols = c(cols, var)
+    }
+  }
+}
+# Observe the variables
+df_glm = df %>% dplyr::select(unique(cols), D)
+model_glm = glm(D ~ .,  data =df_glm, family=binomial("logit")) 
+plot(model_glm)
+```
+
+# 4 - run the mediation model with binger HS vs binger in college as mediators
+```{r}
+library(mediation)
+# Ad now, we can run a mediation model
+# define our mediation as frequent binger in college, and our instrument is frequent binger in high school.
+df_glm$HS_binger = (df_glm$HS_drinks_5.>3)*1 # High school frequent binger
+df_glm$College_binger = (df_glm$binge_5.>3)*1 
+df_med = df_glm %>% dplyr::select(-c("HS_drinks_5.", "binge_5.","binge_4."))
+# mediation model
+out.med = glm(College_binger~., data=df_med %>% dplyr::select(-D), family="binomial")
+out.model = glm(D ~ .,data=df_med, family=binomial("logit"))
+mediation_model  =  mediate(out.med, out.model, treat ="HS_binger", mediator =  "College_binger", robustSE = TRUE, sims = 100)
+summary(mediation_model)
+plot(mediation_model)
+```
+
+
+
+
+
+
+
+
+

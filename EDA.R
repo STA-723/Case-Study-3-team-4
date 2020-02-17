@@ -1,4 +1,4 @@
-df <- read.csv("/Users/josephmathews/Desktop/Case Studies/CaseStudy3/Case-Study-3-team-422/Data/final_data.csv")
+df <- read.csv("Data/final_data.csv")
 ggplot2::theme_set(ggplot2::theme_bw())
 df <- df %>% select(-survey_weight)
 

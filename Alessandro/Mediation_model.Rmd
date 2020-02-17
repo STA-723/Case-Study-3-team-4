@@ -32,6 +32,8 @@ df =  read_csv(paste(data_dir, "data_93_97_99_01.csv", sep = ""))[,-1]
 # Function to convert Drug_ecstasy into 1's
 f <- function(x) {ifelse(x == 0,1,x)}
 # Response variable
+df$Drug_ecstasy = df$Drug_ecstasy -1
+df$Drug_tranquilizers = df$Drug_tranquilizers -1
 D <- df %>% dplyr::mutate_at(vars("Drug_ecstasy"),f) %>% dplyr::select(-Drug_marijuana) %>%
   dplyr::select(starts_with("Drug_")) %>% mutate_at(vars(starts_with("Drug_")), function(x){x-1}) %>% mutate(sumVar = rowSums(dplyr::select(., contains("Drug_")))) %>%
   mutate(D = ifelse(sumVar > 0,1,0)) %>% dplyr::select(D)
