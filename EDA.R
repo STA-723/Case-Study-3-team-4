@@ -1,6 +1,7 @@
+library(tidyverse)
 df <- read.csv("/Users/josephmathews/Desktop/Case Studies/CaseStudy3/Case-Study-3-team-422/Data/final_data.csv")
 ggplot2::theme_set(ggplot2::theme_bw())
-df <- df %>% select(-survey_weight)
+df <- df %>% dplyr::select(-survey_weight)
 
 df <- df %>% mutate_at(vars(X30_days_alchol,X30_days_drink_usually,X30_days_drunk,AlchUse_famfeel,
                             "binge_4.","binge_5.",Educ_satisfaction,
@@ -10,7 +11,7 @@ df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,fathe
                             native_american,other,religion,Spanish,white,year,year_in_school,alchol_use,starts_with("DP")),as.factor) 
 
 
-model <- glm(D ~. , data=df) 
+model <- glm(D ~. , data=df,family=binomial) 
 
 create_proportion_plot <- function(tibble,variable,variable_level_length,label_name) {
   new_df <- tibble %>% 
@@ -86,6 +87,35 @@ tibble(Variable_names,Effect_sizes,Form) %>% ggplot(aes(x=Variable_names,y=Effec
   theme(plot.title = element_text(hjust = 0.5))
 
 
+
+
+
+
+
+############################ MEDIATION ANALYSIS ####################################
+
+df <- read.csv("/Users/josephmathews/Desktop/Case Studies/CaseStudy3/Case-Study-3-team-422/Data/final_data.csv")
+df <- df  %>% mutate(H_binge = ifelse(HS_times_drank >= 5 | HS_drinks_5. >= 5 | HS_n_drinks >= 6, 1, 0))
+
+df <- df %>% mutate(C_binge = ifelse(X30_days_alchol >= 5 | X30_days_drink_usually >= 6 | X30_days_drunk >= 5 | binge_4. >= 5 |binge_5. >= 5 , 1, 0))               
+
+df <- df %>% mutate_at(vars(X30_days_alchol,X30_days_drink_usually,X30_days_drunk,AlchUse_famfeel,
+                            "binge_4.","binge_5.",Educ_satisfaction,
+                            HS_drinks_5.,HS_n_drinks,HS_times_drank),as.ordered)
+df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,father_schooling,
+                            gender,greek_member,starts_with("live_"),Marital_status,mother_schooling,
+                            native_american,other,religion,Spanish,white,year,year_in_school,alchol_use,starts_with("DP")),as.factor) 
+
+df <- df %>% select(-c(starts_with("DP"),last_drink,starts_with("DAYE"),survey_weight,year,X,starts_with("HS_"),starts_with("X30"),
+                       starts_with("binge")))
+df1 <- df %>% select(-D)
+model1 <- glm(C_binge ~ ., data=df1,family=binomial(link=logit))
+model2 <- glm(D ~.,data=df,family=binomial(link=logit))
+
+library(mediation)
+mediation_analysis <- mediate(model1, model2, sims=50, treat="H_binge", mediator="C_binge")
+summary(mediation_analysis)
+plot(mediation_analysis)
 
 
 
