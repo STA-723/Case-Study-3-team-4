@@ -136,11 +136,111 @@ summary(mediation_model)
 plot(mediation_model)
 ```
 
+# Try a different approach. Remove the polynomial constrasts, and use the dummy variables
+```{r}
+df_newlasso <- df %>% mutate_at(vars(X30_days_alchol,                                X30_days_drink_usually,X30_days_drunk,AlchUse_famfeel,
+                            "binge_4.","binge_5.",Educ_satisfaction,
+                            HS_drinks_5.,HS_n_drinks,HS_times_drank),as.factor) %>% 
+  mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,
+                 father_schooling,gender,greek_member,starts_with("live_"),
+                            Marital_status,mother_schooling,
+                            native_american,
+                            other,religion,Spanish,white,
+                        year,year_in_school,alchol_use,starts_with("DP")),
+            as.factor) 
+X <- df_newlasso %>% dplyr::select(-c("last_drink",starts_with("DAYE1"),"D", "X")) 
+# Model matrix
+M = model.matrix(D~., data=cbind(X,y))[,-1]
+groups <- c(1,1,1,2,3,4,5,5,5,6,7,7,6,8,8,8,8,8,8,8,8,8,8,8,8,
+            9,10,11,12,13,14,15,16,17,17,17,17,18,10,19,6,6,20,6,6,21,
+            22)
+columns_contrast =colnames(M)
+varnames = colnames(X)
+groups_contrast = rep(0, ncol(M))
+for(n in 1:length(varnames)){
+  for(m in 1:length(columns_contrast)){
+    if(grepl(varnames[n], columns_contrast[m], fixed=TRUE)){
+      #print(paste(varnames[n], columns_contrast[m], sep = " - "))
+      groups_contrast[m] = groups[n]
+    }
+  }
+}
+y <- df %>% dplyr::select("D")
+model_glasso = grplasso(as.matrix(cbind(rep(1, nrow(M)),M)),
+                        as.matrix(y),index=c(NA,groups_contrast),
+                        lambda = 1, model = LogReg())
+
+sampled_rows = sample(c(1:nrow(M)), size = 10000)
+y <- ifelse(y == 0, -1,1) 
+da_red <- list("X"=as.matrix(M[sampled_rows,]),"y"=as.matrix(y[sampled_rows,]))
+model_lasso_simple_red <- gglasso(x=da_red$X,y=da_red$y,
+                              group=groups_contrast,
+                              loss="logit", lambda = 0.01)
+```
 
 
+```{r}
+# try to use survey package
+library(survey)
+df <- read.csv("/Users/antonio/Dropbox/Duke/Courses_Spring2020/Cases_Studies/Case_3/Case_3/Data/final_data.csv")
+df <- df %>% mutate_at(vars(AlchUse_father,AlchUse_mother, alchol_use),f1)
+df <- df  %>% mutate(H_binge = ifelse(HS_times_drank >= 5 | HS_drinks_5. >= 5 | HS_n_drinks >= 6, 1, 0))
+
+df <- df %>% mutate(C_binge = ifelse(X30_days_alchol >= 5 | X30_days_drink_usually >= 6 | X30_days_drunk >= 5 | binge_4. >= 5 |binge_5. >= 5 , 1, 0))               
+
+df <- df %>% mutate_at(vars(X30_days_alchol,X30_days_drink_usually,X30_days_drunk,AlchUse_famfeel,
+                            "binge_4.","binge_5.",Educ_satisfaction,
+                            HS_drinks_5.,HS_n_drinks,HS_times_drank),as.ordered)
+df <- df %>% mutate_at(vars(AA_meeting,AlchUse_father,AlchUse_mother,asian,father_schooling,
+                            gender,greek_member,starts_with("live_"),Marital_status,mother_schooling,
+                            native_american,other,religion,Spanish,white,year,year_in_school,alchol_use,starts_with("DP")),as.factor) 
+
+df <- df %>% dplyr::select(-c(starts_with("DP"),last_drink,starts_with("DAYE"),X,starts_with("HS_"),starts_with("X30"),starts_with("binge")))
+df1 <- df %>% dplyr::select(-D)
+# survey design
+sv.design = svydesign(
+		id = ~0 ,
+    strata = ~year,
+		data = df ,
+		weights = ~survey_weight
+	)
+# baseline model
+out.model <- svyglm(D ~ H_binge +C_binge+ AA_meeting
+                   +age+AlchUse_famfeel+AlchUse_father+AlchUse_mother+asian+
+                    black+Educ_satisfaction+father_schooling+gender+ 
+                     GPA+greek_member+live_alone +live_parents+
+                     live_roommate+live_spouse+Marital_status+
+                     mother_schooling + N_close_friends + 
+                     native_american +other+religion+year_in_school , sv.design,
+                   family=quasibinomial())
+# mediation model
+out.med <- svyglm(C_binge ~ H_binge + AA_meeting
+                   +age+AlchUse_famfeel+AlchUse_father+AlchUse_mother+asian+
+                    black+Educ_satisfaction+father_schooling+gender+ 
+                     GPA+greek_member+live_alone +live_parents+
+                     live_roommate+live_spouse+Marital_status+
+                     mother_schooling + N_close_friends + 
+                     native_american +other+religion+year_in_school , sv.design,
+                   family=quasibinomial())
+
+out.med = glm(C_binge~., data=df1, family="binomial")
+out.model = glm(D ~ .,data=df, family=binomial("logit"))
+mediation_model  =  mediate(out.med, out.model, treat ="H_binge", mediator =  "C_binge", robustSE = TRUE, sims = 500)
+summary(mediation_model)
+plot(mediation_model)
+```
 
 
-
-
+```{r}
+D30 <- df %>% dplyr::select(-DAYE1A) %>%
+  dplyr::select(starts_with("DAYE")) %>% mutate(sumVar = rowSums(dplyr::select(., contains("DAYE")))) %>%
+  mutate(D30 = ifelse(sumVar > 0,1,0)) %>% dplyr::select(D30)
+df <- df %>% dplyr::select(-c(starts_with("DP"),last_drink,starts_with("DAYE"),X,starts_with("HS_"),starts_with("X30"),starts_with("binge")))
+out.med = glm(C_binge~., data=df1, family="binomial")
+out.model = glm(D30 ~ .,data=cbind(df%>% dplyr::select(-D), D30), family=binomial("logit"))
+mediation_model  =  mediate(out.med, out.model, treat ="H_binge", mediator =  "C_binge", robustSE = TRUE, sims = 500)
+summary(mediation_model)
+plot(mediation_model)
+```
 
 
